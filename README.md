@@ -13,3 +13,6 @@ Secondary Goals
 2. better attack rolls (able to change weapon in inventory)
 3. auto level-up and level-up help
 4. modify multiple characters for AEO healing, damage, or buffs (like temp hitpoints or enemy attacks)
+5. add and keep track of items such as healing potions
+6. can privately pull character sheets from for viewing the whole thing
+7. can show and automatically apply conditions such as prone
