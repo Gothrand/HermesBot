@@ -16,3 +16,4 @@ Secondary Goals
 5. add and keep track of items such as healing potions
 6. can privately pull character sheets from for viewing the whole thing
 7. can show and automatically apply conditions such as prone
+8. automatically uses multi-attacks if the character uses the attack action with the class feature
