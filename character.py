@@ -2,7 +2,9 @@
 This file's purpose is to contain the classes used to represent a character with that character's stats and   
 '''
 import json
-
+from enum import Enum
+# This represents what a character's information looks like.  A discord user will have a list of these
+# data blocks under their tag for each character they own.
 dataStructure = {
     "charName":"",
     "playerName":"",
@@ -27,60 +29,102 @@ dataStructure = {
     "speed":"0",
     "tempHP":"0",
     "hitDice":"",
-    "background":""
+    "background":"",
+    "alignment":"",
+    "imageURL":""
 }
-# character name, player name, class, subclass, level, race, short description, stats list, spells, armor class, proficiencies, saving throws
 
+# where we are storing character data
 fileName = "charSheet.json"
 
-def updateChar(player, key, value):
-    with open(fileName, "r") as f:
+# helper function to load JSON files
+def loadJSON(file):
+    with open(file, "r") as f:
         data = json.load(f)
+    
+    return data
 
-    try:
-        data[player][0][key] = value
-        newData = json.dumps(data)
-        with open(fileName, "w") as f:
-            f.write(newData)
-    except AttributeError:
-        print("fuck")
-        return None
-
+# helper function to write to JSON files with a JSON string
+def writeJSON(file, jsonString):
+    with open(file, "w") as f:
+        f.write(jsonString)
+    
     return
 
-def getInfo(player, key):
-    with open(fileName, "r") as f:
-        data = json.load(f)
+# Finds a character under the player's discord tag which has a matching character name
+# Returns None if the character is not found.
+def findCharacter(player, character):
+    data = loadJSON(fileName)
+    charIndex = -1
+    for i, item in enumerate(data[player]):
+        if item["charName"] == character:
+            charIndex = i
+            break
+    else:
+        return None
+    
+    return charIndex
+
+# updates certain keys about a character with the corresponding value.  Returns false if the character is not found.
+def updateChar(player, character, key, value):
+    data = loadJSON(fileName)
+
+    try:
+        data[player][findCharacter(player, character)][key] = value
+        newData = json.dumps(data)
+        writeJSON(fileName, newData)
+
+    except:
+        return False
+
+    return True
+
+# Returns information about the value about a character corresponding to the key
+def getInfo(player, character, key):
+    data = loadJSON(fileName)
     
     try:
-        return data[player][0][key]
-    except AttributeError:
-        print("fuck 2.0")
-        return None
+        item = data[player][findCharacter(player, character)][key] if data[player][findCharacter(player, character)][key] != "" else "null"
+        return item
+    except:
+        return "null"
 
-def addCharacter(playerName):
-    with open(fileName, "r") as f:
-        data = json.load(f)
+# Creates a new character underneath the corresponding discord tag.
+def addCharacter(player, character):
+    data = loadJSON(fileName)
+    print(len(data))
+    if len(data) == 0:
+        data = {player:[dataStructure]}
+        data[player][0]["charName"] = character
+        print(data)
+    else:
+        data[player].append(dataStructure)
+        data[player][-1]["charName"] = character
     
-    data.update({playerName:[dataStructure]})
     newData = json.dumps(data)
-    with open(fileName, "w") as f:
-        f.write(newData)
-
-def removeCharacter(playerName):
-    with open(fileName, "r") as f:
-        data = json.load(f)
+    writeJSON(fileName, newData)
     
-    del data[playerName]
-    newData = json.dumps(data)
-    with open(fileName, "w") as f:
-        f.write(newData)
+    return
 
+# Removes a character from the corresponding player's character list.
+def removeCharacter(player, character):
+    data = loadJSON(fileName)
+    try:
+        del data[player][findCharacter(player, character)]
+        newData = json.dumps(data)
+        writeJSON(fileName, newData)
+        return True
+    except:
+        print("Character not found.  Aborting.")
+
+    return False
+
+
+# Driver code
 if __name__ ==  "__main__":
     y = json.dumps({})
-    with open(fileName, "w") as f:
-        f.write(y)
+    writeJSON(fileName, y)
 
-    addCharacter("Gothrand#9375")
+    addCharacter("Gothrand#9375", "Gothrand")
     updateChar("Gothrand#9375", "charName", "Gothrand")
     print(getInfo("Gothrand#9375", "charName"))
