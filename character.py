@@ -34,6 +34,9 @@ dataStructure = {
     "imageURL":""
 }
 
+#TODO: Add a table of contents for attributes that the player can use to see what attributes they can modify
+#TODO: Move discord embed formatting to this file and have hermes create the embed on it's file
+
 # where we are storing character data
 fileName = "charSheet.json"
 
@@ -64,6 +67,14 @@ def findCharacter(player, character):
         return None
     
     return charIndex
+
+def getCharacters(player):
+    data = loadJSON(fileName)
+    result = []
+    for character in data[player]:
+        result.append(character["charName"])
+    
+    return result
 
 # updates certain keys about a character with the corresponding value.  Returns false if the character is not found.
 def updateChar(player, character, key, value):
