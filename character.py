@@ -1,7 +1,8 @@
 '''
 This file's purpose is to contain the classes used to represent a character with that character's stats and   
 '''
-import json
+import json, PyPDF2
+import discord
 from enum import Enum
 # This represents what a character's information looks like.  A discord user will have a list of these
 # data blocks under their tag for each character they own.
@@ -36,6 +37,9 @@ dataStructure = {
 
 #TODO: Add a table of contents for attributes that the player can use to see what attributes they can modify
 #TODO: Move discord embed formatting to this file and have hermes create the embed on it's file
+#TODO: Add import, export functions for PDF reading
+#TODO: Add functions for printing proficiency lists
+#TODO: Add function for printing ability score list
 
 # where we are storing character data
 fileName = "charSheet.json"
@@ -130,7 +134,23 @@ def removeCharacter(player, character):
 
     return False
 
+def createEmbed(player, character):
+    embedVar = discord.Embed(title=getInfo(player, character, "charName"), color=0x3399ff)
+    embedVar.add_field(name="Subclass", value=getInfo(player, character, "subClass"), inline=True)
+    embedVar.add_field(name="Class", value=getInfo(player, character, "charClass"), inline=True)
+    embedVar.add_field(name="Level", value=getInfo(player, character, "level"), inline=True)
+    embedVar.add_field(name="Race", value=getInfo(player, character, "race"), inline=True)
+    embedVar.add_field(name="Background", value=getInfo(player, character, "background"), inline=True)
+    embedVar.add_field(name="Alignment", value=getInfo(player, character, "alignment"), inline=True)
 
+    embedVar.add_field(name="Str", value=getInfo(player, character, "attrStr"), inline=True)
+    embedVar.add_field(name="Dex", value=getInfo(player, character, "attrDex"), inline=True)
+    embedVar.add_field(name="Con", value=getInfo(player, character, "attrCon"), inline=True)
+    embedVar.add_field(name="Int", value=getInfo(player, character, "attrInt"), inline=True)
+    embedVar.add_field(name="Wis", value=getInfo(player, character, "attrWis"), inline=True)
+    embedVar.add_field(name="Char", value=getInfo(player, character, "attrChar"), inline=True)
+
+    return embedVar
 # Driver code
 if __name__ ==  "__main__":
     y = json.dumps({})
