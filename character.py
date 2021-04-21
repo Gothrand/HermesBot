@@ -3,40 +3,98 @@ This file's purpose is to contain the classes used to represent a character with
 '''
 import json, PyPDF2
 import discord
-from enum import Enum
+
 # This represents what a character's information looks like.  A discord user will have a list of these
 # data blocks under their tag for each character they own.
 dataStructure = {
-    "charName":"",
-    "playerName":"",
-    "charClass":"",
-    "subClass":"",
-    "level":"1",
-    "race":"",
-    "attrStr":"10",
-    "attrDex":"10",
-    "attrCon":"10",
-    "attrInt":"10",
-    "attrWis":"10",
-    "attrChar":"10",
-    "spellList":"", # Will be something like 'spell':True/False where true/false represents if the spell is prepared or not.
-    "maxPreparedSpells":"0",
-    "armorClass":"10",
-    "profList":"",
-    "savingThrows":"",
-    "profBonus":"2",
-    "charImage":"",
-    "maxHP":"0",
-    "speed":"0",
-    "tempHP":"0",
-    "hitDice":"",
-    "background":"",
-    "alignment":"",
-    "imageURL":""
+    "ClassLevel":"",
+    "Background":"",
+    "PlayerName":"",
+    "CharacterName":"",
+    "Race ":"",
+    "Alignment":"",
+    "XP":"",
+    "Inspiration":"",
+    "ProfBonus":"2",
+    "AC":"10", # Armor Class
+    "Initiative":"",
+    "Speed":"0",
+    "HPMax":"0",
+    "HPCurrent":"",
+    "HPTemp":"0",
+    "HD":"", # Hit dice
+    "STR":"10",
+    "DEX":"10",
+    "CON":"10",
+    "INT":"10",
+    "WIS":"10",
+    "CHAR":"10",
+    "STRmod":"",
+    "DEXmod ":"",
+    "CONmod":"",
+    "INTmod":"",
+    "WISmod":"",
+    "CHamod":"",
+    "Check Box 11":"", # Strength Saving Throw Prof, each follows as suit.  Value is either 'None' or '/Yes'
+    "Check Box 18":"",
+    "Check Box 19":"",
+    "Check Box 20":"",
+    "Check Box 21":"",
+    "Check Box 22":"",
+    "ST Strength":"", # Saving Throws
+    "ST Dexterity":"",
+    "ST Constitution":"",
+    "ST Intelligence":"",
+    "ST Wisdom":"",
+    "ST Charisma":"",
+    "Acrobatics":"",
+    "Animal":"",
+    "Arcana":"",
+    "Athletics":"",
+    "Deception":"",
+    "History":"",
+    "Insight":"",
+    "Intimidation":"",
+    "Investigation":"",
+    "Medicine":"",
+    "Nature":"",
+    "Perception":"",
+    "Performance":"",
+    "Persuasion":"",
+    "Religion":"",
+    "SleightofHand":"",
+    "Stealth":"",
+    "Survival":"",
+    "Wpn Name":"",
+    "Wpn1 AtkBonus":"",
+    "Wpn1 Damage":"",
+    "Wpn Name 2":"",
+    "Wpn2 AtkBonus":"",
+    "Wpn2 Damage":"",
+    "Wpn Name 3":"",
+    "Wpn3 AtkBonus":"",
+    "Wpn3 Damage":"",
+    "AttacksSpellcasting":"",
+    "Passive":"", # Passive Perception
+    "CP":"",
+    "SP":"",
+    "EP":"",
+    "GP":"",
+    "PP":"",
+    "ProficienciesLang":"",
+    "Age":"",
+    "Height":"",
+    "Weight":"",
+    "Eyes":"",
+    "Skin":"",
+    "Hair":"",
+    "PersonalityTraits":"",
+    "Ideals":"",
+    "Bonds":"",
+    "Flaws":""
 }
 
 #TODO: Add a table of contents for attributes that the player can use to see what attributes they can modify
-#TODO: Move discord embed formatting to this file and have hermes create the embed on it's file
 #TODO: Add import, export functions for PDF reading
 #TODO: Add functions for printing proficiency lists
 #TODO: Add function for printing ability score list
@@ -60,15 +118,24 @@ def writeJSON(file, jsonString):
 
 # Finds a character under the player's discord tag which has a matching character name
 # Returns None if the character is not found.
-def findCharacter(player, character):
-    data = loadJSON(fileName)
-    charIndex = -1
-    for i, item in enumerate(data[player]):
-        if item["charName"] == character:
-            charIndex = i
-            break
+def findCharacter(player, character, data=None):
+    if data is not None:
+        charIndex = -1
+        for i, item in enumerate(data[player]):
+            if item["CharacterName"] == character:
+                charIndex = i
+                break
+        else:
+            return None
     else:
-        return None
+        data = loadJSON(fileName)
+        charIndex = -1
+        for i, item in enumerate(data[player]):
+            if item["CharacterName"] == character:
+                charIndex = i
+                break
+        else:
+            return None
     
     return charIndex
 
@@ -76,7 +143,7 @@ def getCharacters(player):
     data = loadJSON(fileName)
     result = []
     for character in data[player]:
-        result.append(character["charName"])
+        result.append(character["CharacterName"])
     
     return result
 
@@ -85,6 +152,7 @@ def updateChar(player, character, key, value):
     data = loadJSON(fileName)
 
     try:
+        # order of access: player discord tag, that player's character, value for that character to be modified
         data[player][findCharacter(player, character)][key] = value
         newData = json.dumps(data)
         writeJSON(fileName, newData)
@@ -107,18 +175,26 @@ def getInfo(player, character, key):
 # Creates a new character underneath the corresponding discord tag.
 def addCharacter(player, character):
     data = loadJSON(fileName)
-    print(len(data))
     if len(data) == 0:
         data = {player:[dataStructure]}
-        data[player][0]["charName"] = character
-        print(data)
+        data[player][0]["CharacterName"] = character
+    elif player not in data:
+        data.update({player:[dataStructure]})
+        data[player][0]["CharacterName"] = character
     else:
         data[player].append(dataStructure)
-        data[player][-1]["charName"] = character
+        data[player][-1]["CharacterName"] = character
     
     newData = json.dumps(data)
     writeJSON(fileName, newData)
     
+    return
+
+def addPlayer(player):
+    data = loadJSON(fileName)
+    data.update({player:[]})
+    newData = json.dumps(data)
+    writeJSON(fileName, newData)
     return
 
 # Removes a character from the corresponding player's character list.
@@ -134,28 +210,80 @@ def removeCharacter(player, character):
 
     return False
 
-def createEmbed(player, character):
-    embedVar = discord.Embed(title=getInfo(player, character, "charName"), color=0x3399ff)
-    embedVar.add_field(name="Subclass", value=getInfo(player, character, "subClass"), inline=True)
-    embedVar.add_field(name="Class", value=getInfo(player, character, "charClass"), inline=True)
-    embedVar.add_field(name="Level", value=getInfo(player, character, "level"), inline=True)
-    embedVar.add_field(name="Race", value=getInfo(player, character, "race"), inline=True)
-    embedVar.add_field(name="Background", value=getInfo(player, character, "background"), inline=True)
-    embedVar.add_field(name="Alignment", value=getInfo(player, character, "alignment"), inline=True)
+def importFromPDF(player, character):
+    data = loadJSON(fileName)
 
-    embedVar.add_field(name="Str", value=getInfo(player, character, "attrStr"), inline=True)
-    embedVar.add_field(name="Dex", value=getInfo(player, character, "attrDex"), inline=True)
-    embedVar.add_field(name="Con", value=getInfo(player, character, "attrCon"), inline=True)
-    embedVar.add_field(name="Int", value=getInfo(player, character, "attrInt"), inline=True)
-    embedVar.add_field(name="Wis", value=getInfo(player, character, "attrWis"), inline=True)
-    embedVar.add_field(name="Char", value=getInfo(player, character, "attrChar"), inline=True)
+    if player not in data:
+        data.update({player:[dataStructure]})
+        data[player][0]["CharacterName"] = character
+    elif player in data:
+        data[player].append(dataStructure)
+        data[player][-1]["CharacterName"] = character
+    
+    pdfFileObj = open('characterSheet.pdf', 'rb')
+    pdf = PyPDF2.PdfFileReader(pdfFileObj)
+
+    fields = pdf.getFields()
+    for field_name, value in fields.items():
+        field_value = value.get('/V')
+        
+        if field_name == "CharacterName":
+            continue
+
+        index = findCharacter(player, character, data=data)
+        data[player][index][str(field_name)] = str(field_value)
+
+    newData = json.dumps(data)
+    writeJSON(fileName, newData)
+    pdfFileObj.close()
+
+
+def embedCharacter(player, character):
+    embedVar = discord.Embed(title=getInfo(player, character, "CharacterName"), color=0x3399ff)
+    embedVar.add_field(name="Class/Level", value=getInfo(player, character, "ClassLevel"), inline=True)
+    embedVar.add_field(name="Background", value=getInfo(player, character, "Background"), inline=True)
+    embedVar.add_field(name="Player", value=getInfo(player, character, "PlayerName"), inline=True)
+    embedVar.add_field(name="Race", value=getInfo(player, character, "Race "), inline=True)
+    embedVar.add_field(name="Alignment", value=getInfo(player, character, "Alignment"), inline=True)
+    embedVar.add_field(name="XP", value=getInfo(player, character, "XP"), inline=True)
 
     return embedVar
+
+# Needs formatting but this will work for now.
+def embedAttributes(player, character):
+    embedVar = discord.Embed(title=getInfo(player, character, "CharacterName"), color=0x42f560)
+
+    embedVar.add_field(name="Str", value=getInfo(player, character, "STR"), inline=True)
+    embedVar.add_field(name="M", value=getInfo(player, character, "STRmod"), inline=True)
+    embedVar.add_field(name="ST", value=getInfo(player, character, "ST Strength"), inline=True)
+
+    embedVar.add_field(name="Dex", value=getInfo(player, character, "DEX"), inline=True)
+    embedVar.add_field(name="M", value=getInfo(player, character, "DEXmod "), inline=True) # DEXmod has a space at the end, go figure
+    embedVar.add_field(name="ST", value=getInfo(player, character, "ST Dexterity"), inline=True)
+
+
+    embedVar.add_field(name="Con", value=getInfo(player, character, "CON"), inline=True)
+    embedVar.add_field(name="M", value=getInfo(player, character, "CONmod"), inline=True)
+    embedVar.add_field(name="ST", value=getInfo(player, character, "ST Constitution"), inline=True)
+
+
+    embedVar.add_field(name="Int", value=getInfo(player, character, "INT"), inline=True)
+    embedVar.add_field(name="M", value=getInfo(player, character, "INTmod"), inline=True)
+    embedVar.add_field(name="ST", value=getInfo(player, character, "ST Intelligence"), inline=True)
+
+
+    embedVar.add_field(name="Wis", value=getInfo(player, character, "WIS"), inline=True)
+    embedVar.add_field(name="M", value=getInfo(player, character, "WISmod"), inline=True)
+    embedVar.add_field(name="ST", value=getInfo(player, character, "ST Wisdom"), inline=True)
+
+
+    embedVar.add_field(name="Cha", value=getInfo(player, character, "CHAR"), inline=True)
+    embedVar.add_field(name="M", value=getInfo(player, character, "CHamod"), inline=True) # Charisma goes against the grain and wants to be called 'CHamod' instead of 'CHAmod'
+    embedVar.add_field(name="ST", value=getInfo(player, character, "ST Charisma"), inline=True)
+
+    return embedVar
+
 # Driver code
 if __name__ ==  "__main__":
     y = json.dumps({})
     writeJSON(fileName, y)
-
-    addCharacter("Gothrand#9375", "Gothrand")
-    updateChar("Gothrand#9375", "charName", "Gothrand")
-    print(getInfo("Gothrand#9375", "charName"))

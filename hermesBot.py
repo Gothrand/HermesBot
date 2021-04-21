@@ -19,7 +19,27 @@ bot = commands.Bot(command_prefix='!')
 async def on_ready():
     print(f'{bot.user} has connected to Discord!')
 
+# @bot.event
+# async def on_message(message):
+#     if message.author == bot.user:
+#         return
+
+#     await message.channel.send(message.content)
+
 """----- Bot Commands -----"""
+#TODO: Add command to display all the different modifiable attributes used for the '!update' command
+#TODO: add command to print conditions and their effects (part of main ruleset for dnd 5e)
+
+@bot.command(name='import', help='Import a character from a suitable dungeons and dragons PDF')
+async def importCharacter(ctx, arg1):
+    # message is of the discord object 'Message' which contains the attribute 'attachment' which will check for attachments from a message
+    message = ctx.message
+    attachments = message.attachments
+
+    # Need to experiment with using 'read' instead of 'save
+    await attachments[0].save("characterSheet.pdf")
+    importFromPDF(str(ctx.author), str(arg1))
+    await ctx.send(f"Saved character sheet for character {arg1}")
 
 @bot.command(name='characters', help='\nDisplays all saved character sheets for a given discord user.')
 async def characters(ctx):
@@ -28,7 +48,7 @@ async def characters(ctx):
         await ctx.send("No characters found.  Use ``!create {Character Name}`` to create a character.")
     else:
         for character in characters:
-            await ctx.send(embed=createEmbed(str(ctx.author), character))
+            await ctx.send(embed=embedCharacter(str(ctx.author), character))
 
 # needs to parse through character info and display it all
 @bot.command(name='character', help='\nDisplays a character sheet for the given character name.  Usage: ``!character {Character Name}``')
@@ -36,7 +56,15 @@ async def character(ctx, arg1):
     if findCharacter(str(ctx.author), str(arg1)) == None:
         await ctx.send(f"No character found with matching name {arg1}.")
     else:
-        await ctx.send(embed=createEmbed(str(ctx.author), str(arg1)))
+        await ctx.send(embed=embedCharacter(str(ctx.author), str(arg1)))
+
+@bot.command(name='attributes', help='Display attributes for the given character.  Usage:  ``!attributes {Character Name}``')
+async def attributes(ctx, arg1):
+    if findCharacter(str(ctx.author), str(arg1)) == None:
+        await ctx.send(f"No character found with matching name {arg1}.")
+    else:
+        await ctx.send(embed=embedAttributes(str(ctx.author), str(arg1)))
+
 
 # Will need to do input handling later but for now is good
 @bot.command(name='update', help='\nUpdates a character\'s attribute with a specific value.  Usage: ``!update {Character Name} {Attribute} {Value}``')
