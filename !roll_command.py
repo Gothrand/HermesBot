@@ -129,10 +129,8 @@ async def roll(ctx, *arg):
             temp = final_list[i]
         result.append(sum(temp) + mod)
     
-        
-            
-    
-    output = random.randint(1,dice) + mod # actual dice roller
+    output = f"{player} Rolls: \n"
+    for i in range(len(final_list)):
+        output += final_list[i] + " Result: " + result[i] + "\n"
     await ctx.send(output)
-
     
