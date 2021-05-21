@@ -132,13 +132,13 @@ modifiableAttrs = {
     "Con":"CON",
     "Int":"INT",
     "Wis":"WIS",
-    "Char":"CHAR",
+    "Cha":"CHAR",
     "STRmod":"STRmod",
     "DEXmod ":"DEXmod", # Space
     "CONmod":"CONmod",
     "INTmod":"INTmod",
     "WISmod":"WISmod",
-    "CHARmod":"CHamod",
+    "CHAmod":"CHamod",
     "ST Prof Strength":"Check Box 11", # Strength Saving Throw Prof, each follows as suit.  Value is either 'None' or '/Yes'
     "ST Prof Dexterity":"Check Box 18",
     "ST Prof Constitution":"Check Box 19",
