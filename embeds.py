@@ -1,11 +1,15 @@
 # embeds.py
-
-from character import *
+import discord
+from character import getInfo
+from include import proficiencies
 
 def embedCharacter(player, character):
     embedVar = discord.Embed(title=getInfo(player, character, "CharacterName"), color=0x3399ff)
 
-    embedVar.set_image(url=getInfo(player, character, "CHARACTER IMAGE"))
+    imageURL = getInfo(player, character, "CHARACTER IMAGE")
+    if imageURL != "None" and imageURL != "null":
+        print(imageURL)
+        embedVar.set_image(url=imageURL)
 
     embedVar.add_field(name="Class/Level", value=getInfo(player, character, "ClassLevel"), inline=True)
     embedVar.add_field(name="Background", value=getInfo(player, character, "Background"), inline=True)
@@ -14,6 +18,14 @@ def embedCharacter(player, character):
     embedVar.add_field(name="Race", value=getInfo(player, character, "Race "), inline=True)
     embedVar.add_field(name="Alignment", value=getInfo(player, character, "Alignment"), inline=True)
     embedVar.add_field(name="XP", value=getInfo(player, character, "XP"), inline=True)
+
+    embedVar.add_field(name="Armor Class", value=getInfo(player, character, "AC"), inline=True)
+    embedVar.add_field(name="Initiative", value=getInfo(player, character, "Initiative"), inline=True)
+    embedVar.add_field(name="Speed", value=getInfo(player, character, "Speed"), inline=True)
+
+    embedVar.add_field(name="Hit Dice", value=getInfo(player, character, "HD"), inline=True)
+    embedVar.add_field(name="Current HP", value=getInfo(player, character, "HPCurrent"), inline=True)
+    embedVar.add_field(name="Max HP", value=getInfo(player, character, "HPMax"), inline=True)
 
     return embedVar
 

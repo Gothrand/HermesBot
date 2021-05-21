@@ -3,124 +3,13 @@ This file's purpose is to contain the classes used to represent a character with
 '''
 import json, PyPDF2
 import discord
-
-# This represents what a character's information looks like.  A discord user will have a list of these
-# data blocks under their tag for each character they own.
-dataStructure = {
-    "ClassLevel":"",
-    "Background":"",
-    "PlayerName":"",
-    "CharacterName":"",
-    "Race ":"",
-    "Alignment":"",
-    "XP":"",
-    "Inspiration":"",
-    "ProfBonus":"2",
-    "AC":"10", # Armor Class
-    "Initiative":"",
-    "Speed":"0",
-    "HPMax":"0",
-    "HPCurrent":"",
-    "HPTemp":"0",
-    "HD":"", # Hit dice
-    "STR":"10",
-    "DEX":"10",
-    "CON":"10",
-    "INT":"10",
-    "WIS":"10",
-    "CHAR":"10",
-    "STRmod":"",
-    "DEXmod ":"", # Space
-    "CONmod":"",
-    "INTmod":"",
-    "WISmod":"",
-    "CHamod":"",
-    "Check Box 11":"", # Strength Saving Throw Prof, each follows as suit.  Value is either 'None' or '/Yes'
-    "Check Box 18":"",
-    "Check Box 19":"",
-    "Check Box 20":"",
-    "Check Box 21":"",
-    "Check Box 22":"",
-    "ST Strength":"", # Saving Throws
-    "ST Dexterity":"",
-    "ST Constitution":"",
-    "ST Intelligence":"",
-    "ST Wisdom":"",
-    "ST Charisma":"",
-    "Acrobatics":"",
-    "Animal":"",
-    "Arcana":"",
-    "Athletics":"",
-    "Deception ":"", # Space
-    "History ":"", # Space
-    "Insight":"",
-    "Intimidation":"",
-    "Investigation ":"", # Space
-    "Medicine":"",
-    "Nature":"",
-    "Perception ":"", # Space
-    "Performance":"",
-    "Persuasion":"",
-    "Religion":"",
-    "SleightofHand":"",
-    "Stealth ":"", # Space
-    "Survival":"",
-    "Wpn Name":"",
-    "Wpn1 AtkBonus":"",
-    "Wpn1 Damage":"",
-    "Wpn Name 2 ":"", # Space
-    "Wpn2 AtkBonus ":"", # Space
-    "Wpn2 Damage ":"", # Space
-    "Wpn Name 3":"",
-    "Wpn3 AtkBonus  ":"", # Space
-    "Wpn3 Damage ":"", # Space
-    "AttacksSpellcasting":"",
-    "Passive":"", # Passive Perception
-    "CP":"",
-    "SP":"",
-    "EP":"",
-    "GP":"",
-    "PP":"",
-    "ProficienciesLang":"",
-    "Age":"",
-    "Height":"",
-    "Weight":"",
-    "Eyes":"",
-    "Skin":"",
-    "Hair":"",
-    "PersonalityTraits":"",
-    "Ideals":"",
-    "Bonds":"",
-    "Flaws":""
-}
-
+from include import dataStructure, modifiableAttrs
 #TODO: Add a table of contents for attributes that the player can use to see what attributes they can modify
-#TODO: Add functions for printing proficiency lists
-#TODO: Add function for printing ability score list
 #TODO: Attunements list function
 #TODO: Smarter character sheet algorithms e.g. Read attribute scores and correct character sheet wherever necessary
 
 # where we are storing character data
 fileName = "charSheet.json"
-
-proficiencies = ["Acrobatics",
-                 "Animal",
-                 "Arcana",
-                 "Athletics",
-                 "Deception ", # Space
-                 "History ", # Space
-                 "Insight",
-                 "Intimidation",
-                 "Investigation ", # Space
-                 "Medicine",
-                 "Nature",
-                 "Perception ", # Space
-                 "Performance",
-                 "Persuasion",
-                 "Religion",
-                 "SleightofHand",
-                 "Stealth ", # Space
-                 "Survival"]
 
 # helper function to load JSON files
 def loadJSON(file):
@@ -180,6 +69,20 @@ def updateChar(player, character, key, value):
     except:
         return False
 
+    return True
+
+# an image representing what the character looks like seems important enough to warrant it's own function, also because "CHARACTER IMAGE"
+# is dumb to type out fully when updating the value
+def setImage(player, character, value):
+    data = loadJSON(fileName)
+
+    try:
+        data[player][findCharacter(player, character)]["CHARACTER IMAGE"] = value
+        newData = json.dumps(data)
+        writeJSON(fileName, newData)
+    except:
+        return False
+    
     return True
 
 # Returns information about the value about a character corresponding to the key
@@ -252,6 +155,14 @@ def importFromPDF(player, character):
     newData = json.dumps(data)
     writeJSON(fileName, newData)
     pdfFileObj.close()
+    return
+
+def listAttributes():
+    keys = []
+    for key in modifiableAttrs:
+        keys.append(key)
+    
+    return keys
 
 # Driver code
 if __name__ ==  "__main__":
