@@ -1,6 +1,6 @@
 # embeds.py
 import discord
-from character import getInfo
+from cogs.character_helpers import getInfo
 from include import proficiencies
 
 def embedCharacter(player, character):
@@ -89,3 +89,8 @@ def embedWeapons(player, character):
     embedVar.add_field(name="Damage", value=getInfo(player, character, "Wpn3 Damage "), inline=True)
 
     return embedVar
+
+    
+# test code
+if __name__ == "__main__":
+    print("Embed driver code")

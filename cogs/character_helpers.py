@@ -1,14 +1,7 @@
-'''
-This file's purpose is to contain the classes used to represent a character with that character's stats and   
-'''
+# character.py helpers
 import json, PyPDF2
-import discord
 from include import dataStructure, modifiableAttrs
-#TODO: Add a table of contents for attributes that the player can use to see what attributes they can modify
-#TODO: Attunements list function
-#TODO: Smarter character sheet algorithms e.g. Read attribute scores and correct character sheet wherever necessary
 
-# where we are storing character data
 fileName = "charSheet.json"
 
 # helper function to load JSON files
@@ -163,8 +156,3 @@ def listAttributes():
         keys.append(key)
     
     return keys
-
-# Driver code
-if __name__ ==  "__main__":
-    y = json.dumps({})
-    writeJSON(fileName, y)
