@@ -137,7 +137,7 @@ modifiableAttrs = {
     "Wis":"WIS",
     "Cha":"CHAR",
     "STRmod":"STRmod",
-    "DEXmod ":"DEXmod", # Space
+    "DEXmod":"DEXmod ", # Space
     "CONmod":"CONmod",
     "INTmod":"INTmod",
     "WISmod":"WISmod",
