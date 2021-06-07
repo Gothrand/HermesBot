@@ -208,7 +208,7 @@ DOMT_DESCRIPTIONS = {
     "Comet":"If you single-handedly defeat the next hostile monster or group of monsters you encounter, you gain experience points enough to gain one level.  Otherwise, this card has no effect.",
     "Donjon":"You disappear and become entombed in a state of suspended animation in an extradimensional sphere.  Everything you were wearing and carrying stays behind in the space you occupied when you disappeared.  You remain imprisoned until you are found and removed from the sphere.  You can't be located by any divination magic, but a wish spell can reveal the location of your prison.  You draw no more cards.",
     "Euryale":"The card's medusa-like visage curses you.  You take a -2 penalty on saving throws while cursed in this way.  Only a god or the magic of *The Fates* card can end this curse.",
-    "The Fates":"Reality's fabric unravels and spins anew, allowing you to avoid or erase one event as if it never happened.  You can use the card's magic as soon as you draw the card or at any other time before you die.",
+    "Fates":"Reality's fabric unravels and spins anew, allowing you to avoid or erase one event as if it never happened.  You can use the card's magic as soon as you draw the card or at any other time before you die.",
     "Flames":"A powerful devil becomes your enemy.  The devil seeks your ruin and plagues your life, savoring your suffering before attempting to slay you.  This enmity lasts until either you or the devil dies.",
     "Fool":"You lose 10,000 XP, discard this card, and draw from the deck again, counting both draws as one of your declared draws.  If losing that much XP would cause yo to lose a level, you instead lose an amount that leaves you with just enough XP to keep your level.",
     "Gem":"Twenty-five pieces of jewelry worth 2,000 gp each or fifty gems worth 1,000 gp each appear at your feet.",
@@ -227,5 +227,3 @@ DOMT_DESCRIPTIONS = {
     "Vizier":"At any time you choose within one year of drawing this card, you can ask a question in meditation and mentally receive a truthful answer to that question.  Besides information, the answer helps you solve a puzzling problem or other dilemma.  In other words, the knowledge comes with wisdom on how to apply it.",
     "Void":"This black card spells disaster.  Your soul is drawn from yourbody and contained in an object in a place of the GM's choice.  One or more powerful beings guard the place.  While your soul is trapped in this way, your body is incapacitated.  A wish spell can't restore your soul, but the spell reveals the location of the object that holds it.  You draw no more cards."
 }
-
-

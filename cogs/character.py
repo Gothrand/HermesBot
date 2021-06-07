@@ -11,10 +11,9 @@ from embeds import embedCharacter, embedAttributes, embedProfs, embedWeapons
 
 #TODO: Attunements list function
 #TODO: Smarter character sheet algorithms e.g. Read attribute scores and correct character sheet wherever necessary
-
-# where we are storing character data
-
-class CharacterCog(commands.Cog):
+#TODO: Refactor this code to put all the character not found errors in the error handling part of this code
+#TODO: Add command !add_weapon to add a weapon.
+class Character(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -60,9 +59,7 @@ class CharacterCog(commands.Cog):
     #TODO: Check to see if the user already has a character under that name
     @commands.command(name='import', help='Import a character from a suitable dungeons and dragons PDF')
     async def importCharacter(self, ctx, character_name):
-        # message is of the discord object 'Message' which contains the attribute 'attachment' which will check for attachments from a message
-        message = ctx.message
-        attachments = message.attachments
+        attachments = ctx.message.attachments
 
         # Need to experiment with using 'read' instead of 'save
         await attachments[0].save("characterSheet.pdf")
@@ -92,7 +89,7 @@ class CharacterCog(commands.Cog):
         else:
             await ctx.send(f"Not enough arguments.  Command usage: !create \"Character Name\"")
 
-    @commands.command(name='remove', help='\nRemoves a character sheet with the given character name.  Usage: ``!remove {Character Name}``')
+    @commands.command(name='remove', aliases=['rm'], help='\nRemoves a character sheet with the given character name.  Usage: ``!remove {Character Name}``')
     async def remove(self, ctx, character_name):
         if character_name != "":
             if removeCharacter(str(ctx.author), character_name):
@@ -137,9 +134,8 @@ class CharacterCog(commands.Cog):
             await ctx.send('Invalid command usage, not enough arguments.  Usage: ``!remove {Character Name}``')
 
 def setup(bot):
-    bot.add_cog(CharacterCog(bot))
+    bot.add_cog(Character(bot))
 
 # Driver code
 if __name__ ==  "__main__":
     print("Driver code execute")
-    

@@ -9,16 +9,14 @@ from discord.ext import commands
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 
-#TODO: Add pre/post conditons for each function
-#TODO: Refactor this code to put all the character not found errors in the error handling part of this code
-#TODO: Add command !add_weapon to add a weapon.
-
 # Determines what key character the bot uses to detect commands
 bot = commands.Bot(command_prefix='!', description='A Dungeons & Dragons Character Sheet Discord Interface.')
 
 # cog locations (folder.python file name)
 initial_extensions = ['cogs.character',
-                      'cogs.cards']
+                      'cogs.cards',
+                      'cogs.maps',
+                      'cogs.admin']
 
 # load cogs
 if __name__ == "__main__":
