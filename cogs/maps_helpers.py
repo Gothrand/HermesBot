@@ -78,6 +78,8 @@ def getPixelCoordinate(coordinate, diff : int):
 
     return (x, y)
 
+#TODO: This needs to add a map to the structure, not simply just replace the old one.  Will allow for more maps to
+# be added instead of constantly replacing maps.  Will need a function to delete old unwanted maps.
 def setMap(mapPath, boxes : int):
     # Delete current map data
     writeJSON(currentMap, json.dumps(MAP_STRUCTURE))
@@ -133,14 +135,11 @@ def render():
     tokens = glob(tokensPath+"*")
     players = getPlayers()
 
-    print(tokens, players)
     for token in tokens:
-        print("COCK AND BALL TORTURE")
         player = token.replace('\\', '/')
         player = player.split('/')[-1]
         player = player.split('.', 1)[0]
 
-        print(players.keys())
         if player in players.keys():
             with Image.open(token) as im:
                 im = im.resize((diff, diff))

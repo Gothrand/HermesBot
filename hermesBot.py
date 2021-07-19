@@ -10,13 +10,14 @@ load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 
 # Determines what key character the bot uses to detect commands
-bot = commands.Bot(command_prefix='!', description='A Dungeons & Dragons Character Sheet Discord Interface.')
+bot = commands.Bot(command_prefix='!', description='A Dungeons & Dragons Discord Interface.')
 
 # cog locations (folder.python file name)
 initial_extensions = ['cogs.character',
                       'cogs.cards',
                       'cogs.maps',
-                      'cogs.admin']
+                      'cogs.admin',
+                      'cogs.lookups']
 
 # load cogs
 if __name__ == "__main__":

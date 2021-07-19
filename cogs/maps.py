@@ -9,7 +9,6 @@ class Maps(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-
     @commands.command(name='pfp', hidden=True, help='WIP command')
     async def pfp(self, ctx):
         await ctx.send(str(ctx.author.avatar_url))

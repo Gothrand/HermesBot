@@ -89,8 +89,60 @@ def embedWeapons(player, character):
     embedVar.add_field(name="Damage", value=getInfo(player, character, "Wpn3 Damage "), inline=True)
 
     return embedVar
-
     
+
+def embedSpell(ctx, spell):
+    author = ""
+    if spell['level'] == 0:
+        author = f"cantrip {spell['school']['index']}"
+    elif spell['level'] == 1:
+        author = f"1st level {spell['school']['index']}"
+    elif spell['level'] == 2:
+        author = f"2nd level {spell['school']['index']}"
+    elif spell['level'] == 3:
+        author = f"3rd level {spell['school']['index']}"
+    else:
+        author = f"{spell['level']}th level {spell['school']['index']}"
+    
+    if spell['ritual'] == True:
+        author += " (ritual)"
+
+    description = ""
+    if isinstance(spell['desc'], list):
+        for sentence in spell['desc']:
+            description += sentence+'\n'
+    else:
+        description = spell['desc']
+
+    components = str(spell['components']).replace("[", "")
+    components = components.replace("]", "")
+    components = components.replace("'", "")
+    try:
+        components += f" ({spell['material']})"
+        components = components.replace('.', '')
+    except:
+        print("No material components found.  Moving on.")
+    
+    classes = ""
+    for item in spell['classes']:
+        classes += item["name"]+', '
+    classes = classes[:-2]
+    
+    embedVar = discord.Embed(title=spell['name'], description=description, color=0xba4aff)
+    embedVar.set_author(name=author, icon_url=ctx.author.avatar_url)
+    embedVar.add_field(name="Casting Time", value=spell['casting_time'])
+    embedVar.add_field(name="Range", value=spell['range'])
+    embedVar.add_field(name="Components", value=components)
+    embedVar.add_field(name="Duration", value="C, " + spell["duration"] if spell['concentration'] == True else spell['duration'])
+    embedVar.add_field(name="Classes", value=classes)
+
+    try:
+        embedVar.add_field(name="At Higher Levels", value=spell['higher_level'][0], inline=False)
+    except:
+        print("No higher level modifier found.  Moving on.")
+
+    return embedVar
+
 # test code
 if __name__ == "__main__":
     print("Embed driver code")
