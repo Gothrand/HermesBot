@@ -25,10 +25,6 @@ class Cards(commands.Cog):
             file = discord.File(cardPath)
             await ctx.send(f"You have pulled: {cardName}. {DOMT_DESCRIPTIONS[cardName]}", file=file)
 
-    @commands.command(name='cast', help='Cast a spell.  COMMAND WORK IN PROGRESS')
-    async def cast(self, ctx, spell_name):
-        await ctx.send(f"Casting spell: {spell_name}")
-
     @deck_of_many_things.error
     async def domt_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):

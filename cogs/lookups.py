@@ -16,19 +16,35 @@ class Lookups(commands.Cog):
 
     @commands.command(name='spell', help='Look up a spell\'s description')
     async def spell(self, ctx, *args):
+        # Take the passed arguments and put them together to be used for API lookup
         name = ""
         for arg in args:
-            name += arg.lower()+'-'
+            # handles spells like Antipathy/Sympathy
+            if '/' in arg:
+                for part in arg.split('/'):
+                    name += part.lower()+'-'
+            elif "\'" in arg:
+                splits = arg.split(' ')
+                for split in splits:
+                    split = split.strip('\'')
+                    name += split.lower()+'-'
+            elif ' ' in arg:
+                splits = arg.split(' ')
+                for split in splits:
+                    name += split.lower()+'-'
+            else:
+                name += arg.lower()+'-'
         name = name[:-1]
 
+        # Make the request, check if it 404ed or actually got something
         try:
             response = requests.get(API+f'spells/{name}')
             response.raise_for_status()
-
+        # If 404 then try to get a list of spells that match at least part of what the user asked for
         except HTTPError as http_err:
             print(f'HTTP error ocurred: {http_err}')
             
-            name_splits = name.split('-')
+            name_splits = args
             spells = []
             for split in name_splits:
                 response = requests.get(API+f'spells/?name={split}')
@@ -37,9 +53,15 @@ class Lookups(commands.Cog):
                     print(f"Nothing found for {split}")
                 else:
                     for item in response_dict['results']:
-                        spells.append(item["name"])
+                        if item not in spells:
+                            spells.append(item["name"])
+                        else:
+                            continue
             
-            await ctx.send(f"Did you mean any of these spells?  {spells}")
+            if spells:
+                await ctx.send(f"Did you mean any of these spells?  {spells}")
+            else:
+                await ctx.send(f"Couldn't find anything for {name}.")
 
         except Exception as err:
             print(f'Other error occurred: {err}')

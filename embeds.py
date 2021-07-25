@@ -92,6 +92,7 @@ def embedWeapons(player, character):
     
 
 def embedSpell(ctx, spell):
+    # Handle the author portion of the embed, which will contain the spell level and magic school of the spell
     author = ""
     if spell['level'] == 0:
         author = f"cantrip {spell['school']['index']}"
@@ -104,9 +105,11 @@ def embedSpell(ctx, spell):
     else:
         author = f"{spell['level']}th level {spell['school']['index']}"
     
+    # Add ritual tag if necessary
     if spell['ritual'] == True:
         author += " (ritual)"
 
+    # Descriptions are split into a list of sentences, so need to handle that
     description = ""
     if isinstance(spell['desc'], list):
         for sentence in spell['desc']:
@@ -114,6 +117,8 @@ def embedSpell(ctx, spell):
     else:
         description = spell['desc']
 
+    # Components are also a list of characters but we want them in a row so handle that and add material
+    # components if necessary
     components = str(spell['components']).replace("[", "")
     components = components.replace("]", "")
     components = components.replace("'", "")
@@ -123,11 +128,13 @@ def embedSpell(ctx, spell):
     except:
         print("No material components found.  Moving on.")
     
+    # Format the classes that the spell belongs to
     classes = ""
     for item in spell['classes']:
         classes += item["name"]+', '
     classes = classes[:-2]
     
+    # Create the embed
     embedVar = discord.Embed(title=spell['name'], description=description, color=0xba4aff)
     embedVar.set_author(name=author, icon_url=ctx.author.avatar_url)
     embedVar.add_field(name="Casting Time", value=spell['casting_time'])
@@ -136,6 +143,7 @@ def embedSpell(ctx, spell):
     embedVar.add_field(name="Duration", value="C, " + spell["duration"] if spell['concentration'] == True else spell['duration'])
     embedVar.add_field(name="Classes", value=classes)
 
+    # Not all spells have a higher level tag so add those if they are there.
     try:
         embedVar.add_field(name="At Higher Levels", value=spell['higher_level'][0], inline=False)
     except:
