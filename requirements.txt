@@ -1,0 +1,4 @@
+discord
+dotenv
+pyPDF2
+PIL
