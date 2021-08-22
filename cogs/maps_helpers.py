@@ -119,7 +119,7 @@ def update(player, position):
     return True
 
 
-tokensPath = 'resources/tokens/'
+tokensPath = 'tokens/'
 def render():
     
     data = loadJSON(currentMap)

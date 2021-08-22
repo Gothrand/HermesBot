@@ -52,10 +52,10 @@ class Maps(commands.Cog):
         if attachments is None:
             await ctx.send("You need to upload an image alongside.  Upload an image and in the comment type ``!token``")
         elif name is not None:
-            await attachments[0].save(f'resources/tokens/{name+".jpg"}')
+            await attachments[0].save(f'tokens/{name+".jpg"}')
             await ctx.send(f"Token saved as {name}!")
         else:
-            await attachments[0].save(f"resources/tokens/{str(ctx.author)}.jpg")
+            await attachments[0].save(f"tokens/{str(ctx.author)}.jpg")
             await ctx.send(f"Token saved for {str(ctx.author)}!")
 
     @commands.command(name='region', help='Get a region from the current map.')
