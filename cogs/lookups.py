@@ -71,6 +71,68 @@ class Lookups(commands.Cog):
             spell = json.loads(response.text)
             await ctx.send(embed=embedSpell(ctx, spell))
 
+    @commands.command(name='weapon', help='Look up a weapon')
+    async def weapon(self, ctx, *args):
+        name = ""
+        for arg in args:
+            if '/' in arg:
+                for part in arg.split('/'):
+                    name += part.lower()+'-'
+            elif "\'" in arg:
+                splits = arg.split(' ')
+                for split in splits:
+                    split = split.strip('\'')
+                    name += split.lower()+'-'
+            elif ' ' in arg:
+                splits = arg.split(' ')
+                for split in splits:
+                    name += split.lower()+'-'
+            else:
+                name += arg.lower()+'-'
+        name = name[:-1]
+
+        try:
+            response = requests.get(API+f'equipment/{name}')
+            response.raise_for_status()
+        except HTTPError as http_err:
+            print(f'HTTP error ocurred: {http_err}')
+
+            name_splits = args
+            equipments = []
+            for split in name_splits:
+                response = requests.get(API+f'spells/?name={split}')
+                response_dict = json.loads(response.text)
+                if response_dict['count'] == 0:
+                    print(f"Nothing found for {split}")
+                else:
+                    for item in response_dict['results']:
+                        if item not in equipments:
+                            equipments.append(item["name"])
+                        else:
+                            continue
+            
+            if equipments:
+                await ctx.send(f"Did you mean any of these equipments?  {equipments}")
+            else:
+                await ctx.send(f"Couldn't find anything for {name}.")
+        except Exception as err:
+            print(f'Other error occurred: {err}')
+            await ctx.send('An error occurred while attempting to grab that information.')
+        else:
+            print("Success!")
+            equipment = json.loads(response.text)
+            await ctx.send(embed=embedEquipment(ctx, equipment))
+
+#TODO:  Finish this.  Needs to be able to differentiate between armor, weapons, and other items
+def embedEquipment(ctx, equipment):
+    author = equipment['category_range']+" "+equipment['equipment_category']['name']
+
+    embedVar = discord.Embed(title=equipment['name'], color=0xd93636)
+    embedVar.set_author(name=author, icon_url=ctx.author.avatar_url)
+    embedVar.add_field(name="")
+    return embedVar
+
+
     # @commands.command(name='feat', aliases=['feature'], help='Look up a feat')
 
 def setup(bot):

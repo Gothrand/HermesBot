@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+from discord.ext.commands.errors import MissingRequiredArgument
 
 from cogs.maps_helpers import *
 
@@ -57,10 +58,24 @@ class Maps(commands.Cog):
             await attachments[0].save(f"resources/tokens/{str(ctx.author)}.jpg")
             await ctx.send(f"Token saved for {str(ctx.author)}!")
 
+    @commands.command(name='region', help='Get a region from the current map.')
+    async def region(self, ctx, pos1, pos2):
+        path = getRegion(pos1, pos2)
+        file = discord.File(path, filename="region_map.jpg")
+        try:
+            await ctx.send(file=file)
+        except Exception as e:
+            await ctx.send(f"An error occurred: {e}")
+
     @token.error
     async def token_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send('Invalid command usage, not enough arguments.  Usage: ``!token {image upload}``')
+
+    @region.error
+    async def region_error(self, ctx, error):
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send('Invalid command usage, not enough arguments.  Usage: ``!region {position 1} {position 2}``')
 
 def setup(bot):
     bot.add_cog(Maps(bot))

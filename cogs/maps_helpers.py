@@ -29,6 +29,8 @@ def writeJSON(file, jsonString):
     with open(file, "w") as f:
         f.write(jsonString)
 
+    return
+
 def addGrid(image, diff):
     width, height = image.size
     diff = int(width/diff)
@@ -40,10 +42,10 @@ def addGrid(image, diff):
         height -= error
         image = image.resize((width, height))
 
-    pointsize=int(diff/5)
+    pointsize = int(diff/5)
     shadowcolor = "black"
     draw = ImageDraw.Draw(image)
-    font="arial.ttf"
+    font = "arial.ttf"
     font = ImageFont.truetype(font, pointsize)
 
     for y in range(0, height, diff):
@@ -69,14 +71,7 @@ def addGrid(image, diff):
 
     return image, positions, diff
 
-def getPixelCoordinate(coordinate, diff : int):
-    letter = coordinate[0]
-    number = coordinate[1:]
-    print(letter, number)
-    x = int(mappings[letter]) * diff
-    y = int(number) * diff
-
-    return (x, y)
+# ----- Setters -----
 
 #TODO: This needs to add a map to the structure, not simply just replace the old one.  Will allow for more maps to
 # be added instead of constantly replacing maps.  Will need a function to delete old unwanted maps.
@@ -109,7 +104,7 @@ def update(player, position):
     if data["positions"][position] != "":
         return False
 
-    location = findPosition(player)
+    location = getPosition(player)
     if location is None:
         data["positions"][position] = player
         newData = json.dumps(data)
@@ -161,7 +156,18 @@ def move(player, position):
     
     return True
 
-def findPosition(player):
+# ----- Getters -----
+
+def getPixelCoordinate(coordinate, diff : int):
+    letter = coordinate[0]
+    number = coordinate[1:]
+    print(letter, number)
+    x = int(mappings[letter]) * diff
+    y = int(number) * diff
+
+    return (x, y)
+
+def getPosition(player):
     data = loadJSON(currentMap)
 
     player_position = ""
@@ -185,5 +191,26 @@ def getPlayers():
 
     return players
         
+def getRegion(pos1, pos2):
+    data = loadJSON(currentMap)
+    diff = data['diff']
+    with Image.open(data["path"]) as im:
+        image = im.copy()
+
+    first = getPixelCoordinate(pos1, diff)
+    second = getPixelCoordinate(pos2, diff)
+
+    left = first[0]
+    top = first[1]
+    right = second[0] + diff
+    bottom = second[1] + diff
+    box = (left, top, right, bottom)
+
+    region = image.crop(box)
+    region.save("resources/maps/region.jpg", "JPEG")
+
+    return "resources/maps/region.jpg"
+
+# ----- Driver Code -----
 if __name__ == "__main__":
     writeJSON(currentMap, json.dumps(MAP_STRUCTURE))
