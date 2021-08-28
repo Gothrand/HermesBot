@@ -129,7 +129,26 @@ def embedEquipment(ctx, equipment):
 
     embedVar = discord.Embed(title=equipment['name'], color=0xd93636)
     embedVar.set_author(name=author, icon_url=ctx.author.avatar_url)
-    embedVar.add_field(name="")
+    embedVar.add_field(name="Damage", value=equipment['damage']['damage_dice'] + ' ' + equipment['damage']['damage_type']['name'])
+
+    if equipment['properties']:
+        propertyList = ""
+        for prop in equipment['properties']:
+            if prop['name'] == 'Thrown':
+                propertyList += prop['name'] + f" ({equipment['throw_range']['normal']}/{equipment['throw_range']['long']})"+', '
+            elif prop['name'] == 'Versatile':
+                propertyList += prop['name'] + f" ({equipment['two_handed_damage']['damage_dice']})"+', '
+            else:
+                propertyList += prop['name']+', '
+        propertyList = propertyList[:-2]
+        print(propertyList)
+        
+        embedVar.add_field(name="Properties", value=propertyList)
+    else:
+        embedVar.add_field(name="Properties", value="None")
+
+    embedVar.add_field(name='Cost', value=str(equipment['cost']['quantity']) + ' '+ str(equipment['cost']['unit']))
+
     return embedVar
 
 
