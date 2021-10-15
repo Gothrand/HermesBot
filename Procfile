@@ -1,1 +1,1 @@
-"web: python hermesBot.py" 
+web: python hermesBot.py
