@@ -4,4 +4,4 @@
 *.pdf
 __pycache__
 tokens
-resources/maps/*
+resources/maps/
