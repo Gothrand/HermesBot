@@ -1,7 +1,16 @@
 # HermesBot
 
-"What Hermes can do"
+## What is Hermes?
+Hermes is a discord bot that helps you and your friends play 5th edition Dungeons and Dragons over Discord.  Hermes create and save character sheets of your characters and allow you to get information about your character using commands.  Hermes also supports importing character sheets from the official 3 page character sheet PDF from Wizards of the Coast on their website for Dungeons and Dragons.
 
+### Other things Hermes can do
+Hermes can also look up details about specific spells and even weapons.  By using !spell <Spell name>, Hermes will use a D&D 5e API to get that information and display it for you.  Hermes also supports looking up weapons using !weapon <Weapon name>.
+  
+Hermes can help you use battle maps!  You can upload an image of your choice to use as a battle map and specifiy how many tiles (length wise) you want in your map, and hermes will create an active battle map for you to use.  You can add a token represnenting you and your character which you can then move around the map by using different commands to move around the battlefield.  Soon, Hermes will even support dungeon crawling so you can upload an entire dungeon and then pick out specific regions of the map so your players can see.
+
+Hermes is still in development and more features will be added over time.  Thank you for checking out my project!
+
+## Original Goals
 Primary Goals
 1. import and use character sheets 
 2. User be able to access character sheets tied to their discord username
