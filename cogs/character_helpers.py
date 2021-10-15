@@ -2,6 +2,11 @@
 import json, PyPDF2
 from include import dataStructure, modifiableAttrs
 
+"""
+This file is a place for helper functions to be defined and to help the Character cog.
+"""
+
+
 fileName = "charSheet.json"
 
 # helper function to load JSON files

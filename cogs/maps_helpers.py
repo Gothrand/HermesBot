@@ -11,9 +11,12 @@ MAP_STRUCTURE = {
     "diff":0
 }
 
+extension = ".jpg"
+image_type = "JPEG"
+
 # Inits
 mappings = {}
-alph = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+alph = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 currentMap = "currentMap.json"
 
 for i, letter in enumerate(alph):
@@ -31,9 +34,9 @@ def writeJSON(file, jsonString):
 
     return
 
-def addGrid(image, diff):
+def addGrid(image, boxes):
     width, height = image.size
-    diff = int(width/diff)
+    diff = int(width/boxes)
 
     # This detects variations in the original image and corrects them
     # (prevents missaligned grids if a grid is already present)
@@ -48,14 +51,19 @@ def addGrid(image, diff):
     font = "arial.ttf"
     font = ImageFont.truetype(font, pointsize)
 
+    # From top to bottom, draw horizontal lines startig at (0, y) and ending at (width, y)
+    # (0, y) shoul always be (0, 0) at the start and 'width' is the maximum X value of the image.
+    # Diff is the length of a single edge of a box and is used as a step value for the range() function.
     for y in range(0, height, diff):
         draw.line([(0, y), (width, y)], fill=(0, 0, 0))
-        
+    
+    # From the left to right, draw vertical lines starting at (x, 0) (should be (0, 0)) and end at the maximum Y value of the drawing.
     for x in range(0, width, diff):
         draw.line([(x, 0), (x, height)], fill=(0, 0, 0))
     
-    rightShift = 5
-    positions = {}
+    
+    rightShift = 5 # Used to rightshift coordinate text e.g. 5 pixels over or so
+    positions = {} # Storing what valid positions there are on the map
     for i in range(0, height, diff):
         for j in range(0, width, diff):
             text = f"{alph[int(j/diff)]}{str(int(i/diff))}"
@@ -69,6 +77,7 @@ def addGrid(image, diff):
             draw.text((j+rightShift, i), text, font=font)
             positions.update({text:""})
 
+    # image with the added grid, positions to store what values there are in the grid, and diff for the edge length of a particular box
     return image, positions, diff
 
 # ----- Setters -----
@@ -104,12 +113,14 @@ def update(player, position):
     if data["positions"][position] != "":
         return False
 
+    # Find where the player is.  If the player is not placed yet, then place them at the empty positon they wish to go to.
     location = getPosition(player)
     if location is None:
         data["positions"][position] = player
         newData = json.dumps(data)
         writeJSON(currentMap, newData)
-        
+    
+    # Erase the player from their current position and place them at the new one.
     else:
         data["positions"][location] = ""
         data["positions"][position] = player
@@ -158,10 +169,11 @@ def move(player, position):
 
 # ----- Getters -----
 
+# Using the given coordinate, finds the pixel value for the upper left-hand corner of a given square
 def getPixelCoordinate(coordinate, diff : int):
     letter = coordinate[0]
     number = coordinate[1:]
-    print(letter, number)
+    # print(letter, number)
     x = int(mappings[letter]) * diff
     y = int(number) * diff
 
@@ -190,7 +202,8 @@ def getPlayers():
             players.update({player:key})
 
     return players
-        
+    
+# Gets a specific region of the image, to be used in dungeon exploration.
 def getRegion(pos1, pos2):
     data = loadJSON(currentMap)
     diff = data['diff']

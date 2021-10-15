@@ -3,7 +3,10 @@ from discord.ext import commands
 from include import DOMT_DESCRIPTIONS
 from random import randint
 
-# Cog used for random card pulling from Tarot and Deck of Many Things decks.
+"""
+This cog is used for card pulling e.g. from the deck of many things or for pulling tarot cards.
+Main purpose is just a fun thing to do.  Might rename this later to something more generic in regards to random gacha stuff lol.
+"""
 class Cards(commands.Cog):
     def __init__(self, bot):
         self.bot = bot

@@ -2,3 +2,5 @@
 *.log
 *.env
 *.pdf
+__pycache__
+tokens

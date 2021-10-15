@@ -1,6 +1,10 @@
 import discord
 from discord.ext import commands
 
+"""
+This cog is used to deal with loading and unloading cogs for the bot.  
+These commands are not visible to regular users.
+"""
 class Admin(commands.Cog):
     def __init__(self, bot):
         self.bot = bot

@@ -8,6 +8,7 @@ import json
 
 from embeds import embedSpell
 
+# The API this cog uses
 API = 'https://www.dnd5eapi.co/api/'
 
 class Lookups(commands.Cog):
@@ -19,15 +20,13 @@ class Lookups(commands.Cog):
         # Take the passed arguments and put them together to be used for API lookup
         name = ""
         for arg in args:
+            # This line will clean up the input in the case that the user uses single quotes when passing their argument.
+            arg = arg.replace('\'', "")
+            
             # handles spells like Antipathy/Sympathy
             if '/' in arg:
                 for part in arg.split('/'):
                     name += part.lower()+'-'
-            elif "\'" in arg:
-                splits = arg.split(' ')
-                for split in splits:
-                    split = split.strip('\'')
-                    name += split.lower()+'-'
             elif ' ' in arg:
                 splits = arg.split(' ')
                 for split in splits:
@@ -71,10 +70,15 @@ class Lookups(commands.Cog):
             spell = json.loads(response.text)
             await ctx.send(embed=embedSpell(ctx, spell))
 
+    #TODO:  Fix this so that input such as 'Hand crossbow' is accepted instead of 'crossbow hand'
     @commands.command(name='weapon', help='Look up a weapon')
     async def weapon(self, ctx, *args):
         name = ""
+
         for arg in args:
+            arg = arg.replace(',', "")
+            arg = arg.replace('\'', "")
+
             if '/' in arg:
                 for part in arg.split('/'):
                     name += part.lower()+'-'
@@ -100,7 +104,7 @@ class Lookups(commands.Cog):
             name_splits = args
             equipments = []
             for split in name_splits:
-                response = requests.get(API+f'spells/?name={split}')
+                response = requests.get(API+f'equipment/?name={split}')
                 response_dict = json.loads(response.text)
                 if response_dict['count'] == 0:
                     print(f"Nothing found for {split}")
@@ -129,7 +133,10 @@ def embedEquipment(ctx, equipment):
 
     embedVar = discord.Embed(title=equipment['name'], color=0xd93636)
     embedVar.set_author(name=author, icon_url=ctx.author.avatar_url)
-    embedVar.add_field(name="Damage", value=equipment['damage']['damage_dice'] + ' ' + equipment['damage']['damage_type']['name'])
+    try:
+        embedVar.add_field(name="Damage", value=equipment['damage']['damage_dice'] + ' ' + equipment['damage']['damage_type']['name'])
+    except:
+        embedVar.add_field(name="Damage", value="None")
 
     if equipment['properties']:
         propertyList = ""
