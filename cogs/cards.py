@@ -13,18 +13,17 @@ class Cards(commands.Cog):
         
     @commands.command(name='tarot', help='Pull a major arcana tarot card.')
     async def tarot(self, ctx):
-        tarotCardPath = pullTarot()
+        tarotCardPath = pullCard("tarot")
         # tarotCardName = tarotCardPath.rsplit('-')
         file = discord.File(tarotCardPath)
         await ctx.send("You have pulled: ", file=file)
 
     @commands.command(name='domt', help='Pull a card from the Deck of Many Things.  Must indicate how many cards you would like to draw.')
-    async def deck_of_many_things(self, ctx, amount):
+    async def deck_of_many_things(self, ctx, amount: int):
         for i in range(int(amount)):
-            cardPath = pullDOMT()
-            cardName = cardPath.rsplit('.')[0]
-            cardName = cardName.rsplit('/', 1)[1]
-            print(cardName)
+            cardPath = pullCard("domt")
+            cardName = cardPath.rsplit('.')[0].rsplit('/', 1)[1]
+            # cardName = cardName.rsplit('/', 1)[1]
             file = discord.File(cardPath)
             await ctx.send(f"You have pulled: {cardName}. {DOMT_DESCRIPTIONS[cardName]}", file=file)
 
@@ -37,22 +36,18 @@ def setup(bot):
     bot.add_cog(Cards(bot))
 
 tarotPath = os.getcwd().replace('\\', '/') + "/resources/tarotGifs/"
-def pullTarot():
-    gifs = []
-    for gif in glob.glob(tarotPath+"*"):
-        gifs.append(gif.replace('\\','/'))
-    
-    tarotIndex = randint(0, len(gifs)-1)
-    tarotCard = gifs[tarotIndex]
-    return tarotCard
-
 domtPath = os.getcwd().replace('\\', '/') + "/resources/domtGifs/"
-def pullDOMT():
-    gifs = []
-    for gif in glob.glob(domtPath+"*"):
-        gifs.append(gif.replace('\\', '/'))
+def pullCard(cardSet: str) -> str:
+    if cardSet == "tarot":
+        gifs = [gif.replace('\\', '/') for gif in glob.glob(tarotPath+"*")]
+    else:
+        gifs = [gif.replace('\\', '/') for gif in glob.glob(domtPath+"*")]
+    
+    card = gifs[randint(0, len(gifs)-1)]
+    return card
 
-    domtIndex = randint(0, len(gifs)-1)
-    domtCard = gifs[domtIndex]
-    print(domtCard)
-    return domtCard
+
+# def pullDOMT():
+#     gifs = [gif.replace('\\', '/') for gif in glob.glob(domtPath+"*")]
+#     domtCard = gifs[randint(0, len(gifs)-1)]
+#     return domtCard
