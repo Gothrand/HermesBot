@@ -43,8 +43,7 @@ def pullCard(cardSet: str) -> str:
     else:
         gifs = [gif.replace('\\', '/') for gif in glob.glob(domtPath+"*")]
     
-    card = gifs[randint(0, len(gifs)-1)]
-    return card
+    return gifs[randint(0, len(gifs)-1)]
 
 
 # def pullDOMT():
