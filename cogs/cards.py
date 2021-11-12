@@ -11,13 +11,13 @@ class Cards(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         
+    # Change this command so that it sends the images in one message (try to)
     @commands.command(name='tarot', help='Pull a major arcana tarot card.')
     async def tarot(self, ctx, amount=1):
         for i in range(amount):
             tarotCardPath = pullCard("tarot")
-            # tarotCardName = tarotCardPath.rsplit('-')
             file = discord.File(tarotCardPath)
-        await ctx.send("You have pulled: ", file=file)
+            await ctx.send("You have pulled: ", file=file)
 
     @commands.command(name='domt', help='Pull a card from the Deck of Many Things.  Must indicate how many cards you would like to draw.')
     async def deck_of_many_things(self, ctx, amount=1):
