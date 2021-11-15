@@ -74,7 +74,6 @@ class Lookups(commands.Cog):
     @commands.command(name='weapon', help='Look up a weapon')
     async def weapon(self, ctx, *args):
         name = ""
-
         for arg in args:
             arg = arg.replace(',', "")
             arg = arg.replace('\'', "")
@@ -126,9 +125,14 @@ class Lookups(commands.Cog):
             print("Success!")
             equipment = json.loads(response.text)
             await ctx.send(embed=embedEquipment(ctx, equipment))
+    
+    # @commands.command(name='class', help='Look up a class')
+    # async def archetype(self, ctx, *args):
+    #     pass
+
 
 #TODO:  Finish this.  Needs to be able to differentiate between armor, weapons, and other items
-def embedEquipment(ctx, equipment):
+def embedEquipment(ctx, equipment) -> discord.Embed:
     author = equipment['category_range']+" "+equipment['equipment_category']['name']
 
     embedVar = discord.Embed(title=equipment['name'], color=0xd93636)
@@ -141,12 +145,14 @@ def embedEquipment(ctx, equipment):
     if equipment['properties']:
         propertyList = ""
         for prop in equipment['properties']:
-            if prop['name'] == 'Thrown':
-                propertyList += prop['name'] + f" ({equipment['throw_range']['normal']}/{equipment['throw_range']['long']})"+', '
-            elif prop['name'] == 'Versatile':
-                propertyList += prop['name'] + f" ({equipment['two_handed_damage']['damage_dice']})"+', '
-            else:
-                propertyList += prop['name']+', '
+            match prop['name']:
+                case 'Thrown':
+                    propertyList += prop['name'] + f" ({equipment['throw_range']['normal']}/{equipment['throw_range']['long']})"+', '
+                case 'Versatile':
+                    propertyList += prop['name'] + f" ({equipment['two_handed_damage']['damage_dice']})"+', '
+                case _:
+                    propertyList += prop['name']+', '
+
         propertyList = propertyList[:-2]
         print(propertyList)
         
@@ -160,6 +166,11 @@ def embedEquipment(ctx, equipment):
 
 
     # @commands.command(name='feat', aliases=['feature'], help='Look up a feat')
+
+def embedClass(ctx, arch) -> discord.Embed:
+    embedVar = discord.Embed(title=arch['name'])
+
+    return embedVar
 
 def setup(bot):
     bot.add_cog(Lookups(bot))
