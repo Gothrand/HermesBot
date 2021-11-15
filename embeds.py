@@ -3,13 +3,11 @@ import discord
 from cogs.character_helpers import getInfo
 from include import proficiencies
 
-def embedCharacter(player, character):
+def embedCharacter(player, character) -> discord.Embed:
     embedVar = discord.Embed(title=getInfo(player, character, "CharacterName"), color=0x3399ff)
 
-    imageURL = getInfo(player, character, "CHARACTER IMAGE")
-    if imageURL != "None" and imageURL != "null":
-        print(imageURL)
-        embedVar.set_image(url=imageURL)
+    if getInfo(player, character, "CHARACTER IMAGE") != "null":
+        embedVar.set_image(url=getInfo(player, character, "CHARACTER IMAGE"))
 
     embedVar.add_field(name="Class/Level", value=getInfo(player, character, "ClassLevel"), inline=True)
     embedVar.add_field(name="Background", value=getInfo(player, character, "Background"), inline=True)
@@ -30,7 +28,7 @@ def embedCharacter(player, character):
     return embedVar
 
 # Needs formatting but this will work for now.
-def embedAttributes(player, character):
+def embedAttributes(player, character) -> discord.Embed:
     embedVar = discord.Embed(title=getInfo(player, character, "CharacterName"), color=0x42f560)
 
     textValue = '\N{BLACK DIAMOND}\t' + getInfo(player, character, "ST Strength") if getInfo(player, character, "Check Box 11") == "/Yes" else '\N{WHITE DIAMOND}\t' + getInfo(player, character, "ST Strength")
@@ -65,7 +63,7 @@ def embedAttributes(player, character):
 
     return embedVar
 
-def embedProfs(player, character):
+def embedProfs(player, character) -> discord.Embed:
     embedVar = discord.Embed(title=getInfo(player, character, "CharacterName"), color=0x42f560)
     for i, prof in enumerate(proficiencies):
         textValue = '\N{BLACK DIAMOND}\t' + getInfo(player, character, prof) if getInfo(player, character, f"Check Box {23+i}") == "/Yes" else '\N{WHITE DIAMOND}\t' + getInfo(player, character, prof)
@@ -73,7 +71,7 @@ def embedProfs(player, character):
 
     return embedVar
 
-def embedWeapons(player, character):
+def embedWeapons(player, character) -> discord.Embed:
     embedVar = discord.Embed(title=getInfo(player, character, "CharacterName"), color=0xd93636)
 
     embedVar.add_field(name="Weapon 1", value=getInfo(player, character, "Wpn Name"), inline=True)
@@ -91,66 +89,57 @@ def embedWeapons(player, character):
     return embedVar
     
 
-def embedSpell(ctx, spell):
-    # Handle the author portion of the embed, which will contain the spell level and magic school of the spell
-    author = ""
-    if spell['level'] == 0:
-        author = f"cantrip {spell['school']['index']}"
-    elif spell['level'] == 1:
-        author = f"1st level {spell['school']['index']}"
-    elif spell['level'] == 2:
-        author = f"2nd level {spell['school']['index']}"
-    elif spell['level'] == 3:
-        author = f"3rd level {spell['school']['index']}"
-    else:
-        author = f"{spell['level']}th level {spell['school']['index']}"
-    
-    # Add ritual tag if necessary
-    if spell['ritual'] == True:
-        author += " (ritual)"
+def embedSpell(ctx, spell: dict) -> discord.Embed:
+    author = getSpellType(spell)
 
     # Descriptions are split into a list of sentences, so need to handle that
-    description = ""
-    if isinstance(spell['desc'], list):
-        for sentence in spell['desc']:
-            description += sentence+'\n'
-    else:
-        description = spell['desc']
+    description = [sentence+'\n' for sentence in spell['desc']]
 
     # Components are also a list of characters but we want them in a row so handle that and add material
     # components if necessary
-    components = str(spell['components']).replace("[", "")
-    components = components.replace("]", "")
-    components = components.replace("'", "")
+    components = str(spell['components']).replace("[", "").replace("]", "").replace("'", "")
     try:
-        components += f" ({spell['material']})"
-        components = components.replace('.', '')
-    except:
+        components += f" ({spell['material']})".replace('.', '')
+    except KeyError:
         print("No material components found.  Moving on.")
     
     # Format the classes that the spell belongs to
-    classes = ""
-    for item in spell['classes']:
-        classes += item["name"]+', '
-    classes = classes[:-2]
+    classes = [item['name']+', ' for item in spell['classes']]
+    # fix the last element to not have an extra ', ' after it.
+    classes[-1] = classes[-1][:-2]
     
     # Create the embed
-    embedVar = discord.Embed(title=spell['name'], description=description, color=0xba4aff)
+    embedVar = discord.Embed(title=spell['name'], description="".join(description), color=0xba4aff)
     embedVar.set_author(name=author, icon_url=ctx.author.avatar_url)
     embedVar.add_field(name="Casting Time", value=spell['casting_time'])
     embedVar.add_field(name="Range", value=spell['range'])
     embedVar.add_field(name="Components", value=components)
     embedVar.add_field(name="Duration", value="C, " + spell["duration"] if spell['concentration'] == True else spell['duration'])
-    embedVar.add_field(name="Classes", value=classes)
+    embedVar.add_field(name="Classes", value="".join(classes))
 
     # Not all spells have a higher level tag so add those if they are there.
     try:
         embedVar.add_field(name="At Higher Levels", value=spell['higher_level'][0], inline=False)
-    except:
+    except KeyError:
         print("No higher level modifier found.  Moving on.")
 
     return embedVar
 
-# test code
-if __name__ == "__main__":
-    print("Embed driver code")
+def getSpellType(spell: dict) -> str:
+    match spell['level']:
+        case 0:
+            result = f"Cantrip {spell['school']['index']}"
+        case 1:
+            result = f"1st level {spell['school']['index']}"
+        case 2:
+            result = f"2nd level {spell['school']['index']}"
+        case 3:
+            result = f"3rd level {spell['school']['index']}"
+        case _:
+            result = f"{spell['level']}th level {spell['school']['index']}"
+    
+    # Add ritual tag if necessary
+    if spell['ritual'] == True:
+        result += " (ritual)"
+
+    return result
