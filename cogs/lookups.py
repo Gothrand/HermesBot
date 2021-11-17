@@ -17,23 +17,7 @@ class Lookups(commands.Cog):
 
     @commands.command(name='spell', help='Look up a spell\'s description')
     async def spell(self, ctx, *args):
-        # Take the passed arguments and put them together to be used for API lookup
-        name = ""
-        for arg in args:
-            # This line will clean up the input in the case that the user uses single quotes when passing their argument.
-            arg = arg.replace('\'', "")
-            
-            # handles spells like Antipathy/Sympathy
-            if '/' in arg:
-                for part in arg.split('/'):
-                    name += part.lower()+'-'
-            elif ' ' in arg:
-                splits = arg.split(' ')
-                for split in splits:
-                    name += split.lower()+'-'
-            else:
-                name += arg.lower()+'-'
-        name = name[:-1]
+        name = cleanInputSpells(args)
 
         # Make the request, check if it 404ed or actually got something
         try:
@@ -43,19 +27,7 @@ class Lookups(commands.Cog):
         except HTTPError as http_err:
             print(f'HTTP error ocurred: {http_err}')
             
-            name_splits = args
-            spells = []
-            for split in name_splits:
-                response = requests.get(API+f'spells/?name={split}')
-                response_dict = json.loads(response.text)
-                if response_dict['count'] == 0:
-                    print(f"Nothing found for {split}")
-                else:
-                    for item in response_dict['results']:
-                        if item not in spells:
-                            spells.append(item["name"])
-                        else:
-                            continue
+            spells = queryCategory("spells", args)
             
             if spells:
                 await ctx.send(f"Did you mean any of these spells?  {spells}")
@@ -73,26 +45,7 @@ class Lookups(commands.Cog):
     #TODO:  Fix this so that input such as 'Hand crossbow' is accepted instead of 'crossbow hand'
     @commands.command(name='weapon', help='Look up a weapon')
     async def weapon(self, ctx, *args):
-        name = ""
-        for arg in args:
-            arg = arg.replace(',', "")
-            arg = arg.replace('\'', "")
-
-            if '/' in arg:
-                for part in arg.split('/'):
-                    name += part.lower()+'-'
-            elif "\'" in arg:
-                splits = arg.split(' ')
-                for split in splits:
-                    split = split.strip('\'')
-                    name += split.lower()+'-'
-            elif ' ' in arg:
-                splits = arg.split(' ')
-                for split in splits:
-                    name += split.lower()+'-'
-            else:
-                name += arg.lower()+'-'
-        name = name[:-1]
+        name = cleanInputWeapon(args)
 
         try:
             response = requests.get(API+f'equipment/{name}')
@@ -100,20 +53,7 @@ class Lookups(commands.Cog):
         except HTTPError as http_err:
             print(f'HTTP error ocurred: {http_err}')
 
-            name_splits = args
-            equipments = []
-            for split in name_splits:
-                response = requests.get(API+f'equipment/?name={split}')
-                response_dict = json.loads(response.text)
-                if response_dict['count'] == 0:
-                    print(f"Nothing found for {split}")
-                else:
-                    for item in response_dict['results']:
-                        if item not in equipments:
-                            equipments.append(item["name"])
-                        else:
-                            continue
-            
+            equipments = queryCategory("equipment", args)
             if equipments:
                 await ctx.send(f"Did you mean any of these equipments?  {equipments}")
             else:
@@ -126,20 +66,28 @@ class Lookups(commands.Cog):
             equipment = json.loads(response.text)
             await ctx.send(embed=embedEquipment(ctx, equipment))
     
-    # @commands.command(name='class', help='Look up a class')
+    # @commands.command(name='equipment', aliases=['equip'], help='Look up a class')
     # async def archetype(self, ctx, *args):
     #     pass
 
 
 #TODO:  Finish this.  Needs to be able to differentiate between armor, weapons, and other items
 def embedEquipment(ctx, equipment) -> discord.Embed:
-    author = equipment['category_range']+" "+equipment['equipment_category']['name']
+    match equipment['equipment_category']['name']:
+        case "Adventuring Gear":
+            author = equipment['equipment_category']['name']
+        case "Weapon":
+            author = equipment['category_range']+" "+equipment['equipment_category']['name']
+        case "Armor":
+            author = equipment['armor_category']+" "+equipment['equipment_category']['name']
+        case _:
+            raise ValueError
 
     embedVar = discord.Embed(title=equipment['name'], color=0xd93636)
     embedVar.set_author(name=author, icon_url=ctx.author.avatar_url)
     try:
         embedVar.add_field(name="Damage", value=equipment['damage']['damage_dice'] + ' ' + equipment['damage']['damage_type']['name'])
-    except:
+    except KeyError:
         embedVar.add_field(name="Damage", value="None")
 
     if equipment['properties']:
@@ -161,16 +109,74 @@ def embedEquipment(ctx, equipment) -> discord.Embed:
         embedVar.add_field(name="Properties", value="None")
 
     embedVar.add_field(name='Cost', value=str(equipment['cost']['quantity']) + ' '+ str(equipment['cost']['unit']))
+    # embedVar.add_field(name='Type', value=)
 
     return embedVar
 
-
-    # @commands.command(name='feat', aliases=['feature'], help='Look up a feat')
-
-def embedClass(ctx, arch) -> discord.Embed:
-    embedVar = discord.Embed(title=arch['name'])
-
-    return embedVar
-
+# Required function for cog to work.
 def setup(bot):
     bot.add_cog(Lookups(bot))
+
+
+# def embedClass(ctx, arch) -> discord.Embed:
+#     embedVar = discord.Embed(title=arch['name'])
+
+#     return embedVar
+
+
+'''
+This function cleans up input for the weapon lookup command.
+This is needed due to the nature of certain items contained within the database
+for weapons such as hand crossbows being listed as "crossbow-hand".
+'''
+# TODO:  Add functionality to deal with "example" and 'example' type inputs.
+def cleanInputWeapon(args) -> str:
+    clean_args = []
+    for arg in args:
+        arg = arg.lower().replace(',', "").replace('\'', "")
+
+        if ' ' in arg:
+            for split in arg.split(' '):
+                clean_args.append(split)
+        else:
+            clean_args.append(arg)
+    
+    clean_args.sort() # Needed for cases such as "Crossbow, Hand" and such.  Weapon names are always sorted alphanumerically.
+
+    return "-".join(clean_args)
+
+def cleanInputSpells(args) -> str:
+    clean_args = []
+    for arg in args:
+        arg = arg.lower().replace("\'", "")
+
+        if '/' in arg:
+            for split in arg.split('/'):
+                clean_args.append(split)
+        elif ' ' in arg:
+            for split in arg.split(' '):
+                clean_args.append(split)
+        else:
+            clean_args.append(arg)
+
+    return "-".join(clean_args)
+
+
+# This function takes a category string and a list of arguments and
+# queries dnd 5e api for possible corrections based on the given args.
+def queryCategory(category: str, args):
+    result = []
+    for split in args:
+        response = requests.get(API+f'{category}/?name={split}')
+        response_dict = json.loads(response.text)
+
+        if response_dict['count'] == 0:
+            print(f"Nothing found for {split}")
+        else:
+            for item in response_dict['results']:
+                if item not in result:
+                    result.append(item["name"])
+                else:
+                    continue
+
+    return result
