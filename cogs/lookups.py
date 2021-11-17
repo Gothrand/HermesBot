@@ -1,4 +1,5 @@
 import discord
+from discord.embeds import Embed
 from discord.ext import commands
 
 import requests
@@ -42,10 +43,9 @@ class Lookups(commands.Cog):
             spell = json.loads(response.text)
             await ctx.send(embed=embedSpell(ctx, spell))
 
-    #TODO:  Fix this so that input such as 'Hand crossbow' is accepted instead of 'crossbow hand'
-    @commands.command(name='weapon', help='Look up a weapon')
-    async def weapon(self, ctx, *args):
-        name = cleanInputWeapon(args)
+    @commands.command(name='gear', aliases=['equip', 'equipment', 'weapon', 'armor'], help='Look up a weapon')
+    async def equipment(self, ctx, *args):
+        name = cleanInputEquipment(args)
 
         try:
             response = requests.get(API+f'equipment/{name}')
@@ -54,10 +54,12 @@ class Lookups(commands.Cog):
             print(f'HTTP error ocurred: {http_err}')
 
             equipments = queryCategory("equipment", args)
+
             if equipments:
                 await ctx.send(f"Did you mean any of these equipments?  {equipments}")
             else:
                 await ctx.send(f"Couldn't find anything for {name}.")
+
         except Exception as err:
             print(f'Other error occurred: {err}')
             await ctx.send('An error occurred while attempting to grab that information.')
@@ -70,53 +72,96 @@ class Lookups(commands.Cog):
     # async def archetype(self, ctx, *args):
     #     pass
 
+# Required function for cog to work.
+def setup(bot):
+    bot.add_cog(Lookups(bot))
+
+"""------  Begin helper methods ------"""
 
 #TODO:  Finish this.  Needs to be able to differentiate between armor, weapons, and other items
 def embedEquipment(ctx, equipment) -> discord.Embed:
     match equipment['equipment_category']['name']:
         case "Adventuring Gear":
-            author = equipment['equipment_category']['name']
+            embedVar = embedGearLookup(ctx, equipment)
         case "Weapon":
-            author = equipment['category_range']+" "+equipment['equipment_category']['name']
+            embedVar = embedWeaponLookup(ctx, equipment)
         case "Armor":
-            author = equipment['armor_category']+" "+equipment['equipment_category']['name']
+            embedVar = embedArmorLookup(ctx, equipment)
         case _:
             raise ValueError
 
-    embedVar = discord.Embed(title=equipment['name'], color=0xd93636)
-    embedVar.set_author(name=author, icon_url=ctx.author.avatar_url)
+    return embedVar
+
+def embedGearLookup(ctx, equipment: dict) -> discord.Embed:
+    description = [sentence+'\n' for sentence in equipment['desc']]
+
+    embed = discord.Embed(title=equipment['name'], description="".join(description), color=0x3dd1eb)
+    embed.set_author(name="Adevnturing Gear", icon_url=ctx.author.avatar_url)
+
+    cost = [str(value) for value in equipment['cost'].values()]
+    embed.add_field(name="Cost", value="".join(cost))
+
+    return embed
+
+def embedWeaponLookup(ctx, equipment: dict) -> discord.Embed:
     try:
-        embedVar.add_field(name="Damage", value=equipment['damage']['damage_dice'] + ' ' + equipment['damage']['damage_type']['name'])
+        description = [sentence+'\n' for sentence in equipment['special']]
+        embed = discord.Embed(title=equipment['name'], description="".join(description), color=0xd93636)
     except KeyError:
-        embedVar.add_field(name="Damage", value="None")
+        embed = discord.Embed(title=equipment['name'], color=0xd93636)
+        print("No special description found.  Moving on.")
+    
+    embed.set_author(name=equipment['category_range']+" "+equipment['equipment_category']['name'], icon_url=ctx.author.avatar_url)
+
+    try:
+        embed.add_field(name="Damage", value=equipment['damage']['damage_dice'] + ' ' + equipment['damage']['damage_type']['name'])
+    except KeyError:
+        embed.add_field(name="Damage", value="None")
 
     if equipment['properties']:
-        propertyList = ""
+        propertyList = []
         for prop in equipment['properties']:
             match prop['name']:
                 case 'Thrown':
-                    propertyList += prop['name'] + f" ({equipment['throw_range']['normal']}/{equipment['throw_range']['long']})"+', '
+                    propertyList.append(prop['name'] + f" ({equipment['throw_range']['normal']}/{equipment['throw_range']['long']})")
                 case 'Versatile':
-                    propertyList += prop['name'] + f" ({equipment['two_handed_damage']['damage_dice']})"+', '
+                    propertyList.append(prop['name'] + f" ({equipment['two_handed_damage']['damage_dice']})")
                 case _:
-                    propertyList += prop['name']+', '
-
-        propertyList = propertyList[:-2]
-        print(propertyList)
+                    propertyList.append(prop['name'])
         
-        embedVar.add_field(name="Properties", value=propertyList)
+        embed.add_field(name="Properties", value=", ".join(propertyList))
     else:
-        embedVar.add_field(name="Properties", value="None")
+        embed.add_field(name="Properties", value="None")
 
-    embedVar.add_field(name='Cost', value=str(equipment['cost']['quantity']) + ' '+ str(equipment['cost']['unit']))
-    # embedVar.add_field(name='Type', value=)
+    embed.add_field(name='Cost', value=str(equipment['cost']['quantity']) + ' '+ str(equipment['cost']['unit']))
 
-    return embedVar
+    weight = str(equipment['weight']) + " lbs" if equipment['weight'] > 1 else str(equipment['weight']) + " lb"
+    embed.add_field(name='Weight', value=weight)
 
-# Required function for cog to work.
-def setup(bot):
-    bot.add_cog(Lookups(bot))
+    return embed
 
+def embedArmorLookup(ctx, equipment: dict) -> discord.Embed:
+    embed = discord.Embed(title=equipment['name'], color=0x3d4b80)
+
+    author = equipment['armor_category']+" Armor"
+    embed.set_author(name=author, icon_url=ctx.author.avatar_url)
+
+    armorClass = equipment['armor_class']
+    armorValue = f"{armorClass['base']} + Dex Modifier (max {armorClass['max_bonus']})" if armorClass['dex_bonus'] else f"{armorClass['base']}"
+    embed.add_field(name='Armor Class', value=armorValue)
+
+    cost = [str(value) for value in equipment['cost'].values()]
+    embed.add_field(name='Cost', value=" ".join(cost))
+
+    weight = str(equipment['weight']) + " lbs" if equipment['weight'] > 1 else str(equipment['weight']) + " lb"
+    embed.add_field(name='Weight', value=weight)
+
+    if equipment['stealth_disadvantage']:
+        embed.add_field(name='Stealth', value="Wearing this armor gives you disadvantage on stealth checks.")
+
+    embed.add_field(name='Strength Requirement', value=equipment['str_minimum'])
+
+    return embed
 
 # def embedClass(ctx, arch) -> discord.Embed:
 #     embedVar = discord.Embed(title=arch['name'])
@@ -130,7 +175,7 @@ This is needed due to the nature of certain items contained within the database
 for weapons such as hand crossbows being listed as "crossbow-hand".
 '''
 # TODO:  Add functionality to deal with "example" and 'example' type inputs.
-def cleanInputWeapon(args) -> str:
+def cleanInputEquipment(args) -> str:
     clean_args = []
     for arg in args:
         arg = arg.lower().replace(',', "").replace('\'', "")
@@ -141,7 +186,8 @@ def cleanInputWeapon(args) -> str:
         else:
             clean_args.append(arg)
     
-    clean_args.sort() # Needed for cases such as "Crossbow, Hand" and such.  Weapon names are always sorted alphanumerically.
+    if 'crossbow' in clean_args:
+        clean_args.sort() # Needed for cases such as "Crossbow, Hand" and such.  Weapon names are always sorted alphanumerically.
 
     return "-".join(clean_args)
 
